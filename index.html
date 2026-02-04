@@ -7,70 +7,68 @@
     <style>
         :root { --neon: #00f2ff; --bg: #010409; --glass: rgba(255, 255, 255, 0.05); }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: 1s; }
 
-        /* --- LOGIN & NODE SELECTION --- */
-        #login-screen { text-align: center; z-index: 5000; width: 100%; max-width: 420px; }
-        .login-box { background: var(--glass); padding: 50px; border-radius: 30px; border: 1px solid rgba(0, 242, 255, 0.2); backdrop-filter: blur(25px); }
-        select { width: 100%; background: #000; color: white; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-weight: 600; cursor: pointer; outline: none; text-align: center; }
+        /* --- LOGIN & NODE SELECT --- */
+        #login-screen { text-align: center; z-index: 5000; width: 100%; max-width: 400px; }
+        .login-box { background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid rgba(0, 242, 255, 0.2); backdrop-filter: blur(20px); }
+        select { width: 100%; background: #000; color: var(--neon); border: 1px solid var(--neon); padding: 12px; border-radius: 5px; margin-bottom: 25px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
 
-        /* --- STATION UI --- */
+        /* --- MAIN UI (HIDDEN) --- */
         #station-ui { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
-        body.unlocked #station-ui { display: flex; }
+        body.unlocked #station-ui { display: flex; animation: fadeIn 1s forwards; }
         body.unlocked #login-screen { display: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- HUB SIDEBAR --- */
-        #sidebar { position: fixed; left: 30px; top: 50%; transform: translateY(-50%); width: 250px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; }
-        .hub-hdr { color: var(--neon); font-size: 0.6rem; letter-spacing: 4px; font-weight: 900; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .leader-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 12px; opacity: 0.6; }
-        .leader-row.top { color: var(--neon); opacity: 1; font-weight: 800; }
-        
-        #timer-display { font-size: 12vw; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px rgba(0, 242, 255, 0.3); }
+        /* --- STATION CORE --- */
+        #timer-display { font-size: 12vw; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px rgba(0, 242, 255, 0.4); }
         .controls { position: fixed; bottom: 50px; display: flex; gap: 20px; }
-        button { background: var(--neon); color: black; border: none; padding: 15px 35px; border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; transition: 0.3s; }
+        button { background: var(--neon); color: black; border: none; padding: 12px 28px; border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
+        
+        #sidebar-hub { position: fixed; left: 30px; top: 50%; transform: translateY(-50%); width: 220px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; }
+        .hub-title { color: var(--neon); font-size: 0.6rem; letter-spacing: 3px; border-bottom: 1px solid #222; margin-bottom: 15px; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h1 style="letter-spacing: 12px; color: var(--neon); margin-bottom: 5px;">IST ELITE</h1>
-            <p style="font-size: 0.6rem; opacity: 0.4; margin-bottom: 40px;">GLOBAL NEURAL NETWORK V4.0</p>
+            <h1 style="letter-spacing: 10px; color: var(--neon);">IST ELITE</h1>
+            <p style="font-size: 0.6rem; opacity: 0.5; margin-bottom: 30px;">SELECT NEURAL ACCESS POINT</p>
             
-            <select id="node-select">
-                <option value="KOCHI, IN">INDIA - KOCHI NODE</option>
-                <option value="LONDON, UK">EUROPE - LONDON NODE</option>
-                <option value="NEW YORK, US">USA - NEW YORK NODE</option>
-                <option value="DUBAI, UAE">UAE - DUBAI NODE</option>
+            <select id="node-selector">
+                <option value="KOCHI NODE">INDIA - KOCHI</option>
+                <option value="LONDON NODE">UK - LONDON</option>
+                <option value="NEW YORK NODE">USA - NEW YORK</option>
+                <option value="DUBAI NODE">UAE - DUBAI</option>
             </select>
 
-            <div id="g_id_onload"
-                 data-client_id="402132270232-qa1iikn30jd71a19rp0c14o9ee1njsps.apps.googleusercontent.com"
-                 data-callback="handleAuth">
-            </div>
+            <div id="g_id_onload" data-client_id="402132270232-qa1iikn30jd71a19rp0c14o9ee1njsps.apps.googleusercontent.com" data-callback="handleAuth"></div>
             <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
-            
-            <button onclick="unlockStation('Guest')" style="margin-top: 20px; width:100%; background:transparent; color:#555; border: 1px solid #222;">Offline Bypass</button>
+            <button onclick="unlock()" style="margin-top: 20px; width: 100%; background: transparent; color: #444; border: 1px solid #222;">Offline Bypass</button>
         </div>
     </div>
 
     <div id="station-ui">
-        <div id="sidebar">
-            <div class="hub-hdr">LEADERBOARD</div>
-            <div class="leader-row top"><span>01. RITHIKA</span><span>142H</span></div>
-            <div class="leader-row"><span>02. YOU</span><span>0H</span></div>
-            <div class="hub-hdr" style="margin-top:40px;">ACTIVE NODE</div>
-            <div id="active-node" style="color:var(--neon); font-weight:bold; font-size:0.8rem;">---</div>
+        <div id="sidebar-hub">
+            <div class="hub-title">LEADERBOARD</div>
+            <div style="font-size:0.8rem; margin-bottom:10px;">01. RITHIKA <span style="float:right">142H</span></div>
+            <div style="font-size:0.8rem; color:var(--neon)">02. YOU <span style="float:right">0H</span></div>
+            <div class="hub-title" style="margin-top:30px;">ACTIVE NODE</div>
+            <div id="display-node" style="font-weight:bold; font-size:0.8rem;">---</div>
         </div>
         <div id="timer-display">25:00</div>
-        <div class="controls"><button id="main-btn" onclick="toggleTimer()">Start Session</button></div>
+        <div class="controls">
+            <button id="start-btn" onclick="toggleTimer()">Start Session</button>
+            <button onclick="location.reload()" style="background:#111; color:white;">Exit Node</button>
+        </div>
     </div>
 
     <script>
         let secLeft = 25 * 60, timerLoop, isRunning = false;
-        function handleAuth(resp) { unlockStation(); }
-        function unlockStation() {
-            document.getElementById('active-node').textContent = document.getElementById('node-select').value;
+        function handleAuth(resp) { unlock(); }
+        function unlock() {
+            document.getElementById('display-node').textContent = document.getElementById('node-selector').value;
             document.body.classList.add('unlocked');
         }
         function toggleTimer() {
@@ -85,173 +83,7 @@
                 }, 1000);
             }
             isRunning = !isRunning;
-            document.getElementById('main-btn').textContent = isRunning ? "Pause" : "Resume";
-        }
-    </script>
-</body>
-</html>        /* --- THE STATION CORE --- */
-        #station { justify-content: center; }
-        #precision-clock { position: absolute; top: 30px; font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; }
-        #ghost-clock { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 16vw; font-weight: 900; color: rgba(255, 255, 255, 0.02); 
-            white-space: nowrap; pointer-events: none; z-index: 1; 
-        }
-
-        /* PROGRESS RING & TIMER */
-        .timer-container { position: relative; width: 450px; height: 450px; display: flex; align-items: center; justify-content: center; }
-        .progress-ring-svg { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
-        .ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 4; }
-        .ring-progress { 
-            fill: none; stroke: var(--neon); stroke-width: 4; stroke-linecap: round;
-            stroke-dasharray: 1256; stroke-dashoffset: 1256; transition: stroke-dashoffset 1s linear; 
-        }
-        #timer-display { font-size: 8rem; font-weight: 900; color: var(--neon); text-shadow: 0 0 30px rgba(0, 242, 255, 0.3); z-index: 10; }
-
-        /* --- CONTROL PANEL --- */
-        .ui-panel {
-            position: fixed; bottom: 30px; background: var(--glass); 
-            backdrop-filter: blur(15px); padding: 20px 40px; border-radius: 100px;
-            border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; align-items: center; z-index: 1000;
-        }
-        button { 
-            background: var(--neon); color: black; border: none; padding: 12px 25px; 
-            border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; transition: 0.3s;
-        }
-        button:hover { background: white; transform: translateY(-2px); }
-        .btn-dark { background: rgba(255,255,255,0.1); color: white; }
-
-        /* --- FREQUENCY BARS --- */
-        .viz { position: absolute; bottom: 0; width: 100%; height: 25vh; display: flex; align-items: flex-end; justify-content: center; gap: 15px; pointer-events: none; }
-        .bar { width: 25px; background: linear-gradient(to top, var(--neon), transparent); height: 5%; opacity: 0.15; border-radius: 4px; }
-        .animating { animation: freq 1.5s infinite ease-in-out; }
-        @keyframes freq { 0%, 100% { height: 10%; } 50% { height: 80%; opacity: 0.4; } }
-
-        /* --- MANUAL & CREDITS --- */
-        #manual { background: rgba(0,0,0,0.5); padding: 80px 20px; text-align: center; }
-        .manual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 1000px; margin: 40px auto; }
-        .manual-card { background: var(--glass); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        footer { padding: 40px; opacity: 0.4; font-size: 0.7rem; letter-spacing: 3px; }
-    </style>
-</head>
-<body>
-
-    <div id="auth-overlay">
-        <h2 style="letter-spacing: 10px; margin-bottom: 30px;">STATION IST</h2>
-        <div id="g_id_onload"
-             data-client_id="YOUR_CLIENT_ID_HERE.apps.googleusercontent.com"
-             data-callback="onSignIn">
-        </div>
-        <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_black"></div>
-        <p style="margin-top: 20px; font-size: 0.6rem; opacity: 0.5;">SIGN IN TO ACTIVATE NEURAL LINK</p>
-        <button class="btn-dark" style="margin-top: 10px;" onclick="bypass()">Developer Bypass (Skip Login)</button>
-    </div>
-
-    <div id="main-content">
-        <section id="station">
-            <div id="precision-clock">00:00:00</div>
-            <div id="ghost-clock">12:00 AM</div>
-
-            <div class="timer-container">
-                <svg class="progress-ring-svg" viewBox="0 0 450 450">
-                    <circle class="ring-bg" cx="225" cy="225" r="200"></circle>
-                    <circle id="ring" class="ring-progress" cx="225" cy="225" r="200"></circle>
-                </svg>
-                <div id="timer-display">25:00</div>
-            </div>
-
-            <div class="ui-panel">
-                <button id="start-btn" onclick="toggleTimer()">Start Session</button>
-                <button class="btn-dark" onclick="tune(300)">+5m</button>
-                <button class="btn-dark" onclick="tune(-300)">-5m</button>
-                <button class="btn-dark" onclick="toggleFS()">Full Screen</button>
-                <a href="#manual" style="text-decoration: none;"><button class="btn-dark">Manual</button></a>
-            </div>
-
-            <div id="viz-container" class="viz"></div>
-        </section>
-
-        <section id="manual">
-            <h2 style="letter-spacing: 5px;">USER MANUAL</h2>
-            <div class="manual-grid">
-                <div class="manual-card"><h4>01. BREATHE</h4><p>Sync your pulse to the background aura glow.</p></div>
-                <div class="manual-card"><h4>02. FOCUS</h4><p>Frequency bars jump when the timer is active.</p></div>
-                <div class="manual-card"><h4>03. BREAK</h4><p>When the ring empties, get up and stretch.</p></div>
-            </div>
-            <footer>
-                CREATED BY YOU & GEMINI // © 2026 IST ELITE
-            </footer>
-        </section>
-    </div>
-
-    <script>
-        let secLeft = 25 * 60, totalSec = 25 * 60, timerLoop, isRunning = false;
-        const ring = document.getElementById('ring');
-        const circumference = 2 * Math.PI * 200;
-
-        function onSignIn(response) { document.body.classList.add('unlocked'); init(); }
-        function bypass() { document.body.classList.add('unlocked'); init(); }
-
-        function init() {
-            updateClocks();
-            setInterval(updateClocks, 1000);
-            createBars();
-        }
-
-        function updateClocks() {
-            const now = new Date();
-            document.getElementById('precision-clock').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
-            document.getElementById('ghost-clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        }
-
-        function toggleTimer() {
-            const btn = document.getElementById('start-btn');
-            if (isRunning) {
-                clearInterval(timerLoop);
-                btn.textContent = "Resume";
-                document.querySelectorAll('.bar').forEach(b => b.classList.remove('animating'));
-            } else {
-                btn.textContent = "Pause";
-                document.querySelectorAll('.bar').forEach(b => b.classList.add('animating'));
-                timerLoop = setInterval(() => {
-                    if (secLeft > 0) {
-                        secLeft--;
-                        updateDisplay();
-                    } else {
-                        clearInterval(timerLoop);
-                        alert("Session Complete.");
-                    }
-                }, 1000);
-            }
-            isRunning = !isRunning;
-        }
-
-        function tune(amt) { 
-            secLeft = Math.max(0, secLeft + amt); 
-            totalSec = isRunning ? totalSec : secLeft;
-            updateDisplay(); 
-        }
-
-        function updateDisplay() {
-            let m = Math.floor(secLeft / 60), s = secLeft % 60;
-            document.getElementById('timer-display').textContent = `${m}:${s < 10 ? '0'+s : s}`;
-            const offset = circumference - (secLeft / totalSec) * circumference;
-            ring.style.strokeDashoffset = isNaN(offset) ? 0 : offset;
-        }
-
-        function toggleFS() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
-        }
-
-        function createBars() {
-            const container = document.getElementById('viz-container');
-            for(let i=0; i<20; i++) {
-                const b = document.createElement('div');
-                b.className = 'bar';
-                b.style.animationDuration = (1 + Math.random()) + 's';
-                container.appendChild(b);
-            }
+            document.getElementById('start-btn').textContent = isRunning ? "Pause" : "Resume";
         }
     </script>
 </body>
