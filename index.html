@@ -2,39 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IST STATION // FINAL LEGACY</title>
+    <title>IST STATION // GLOBAL HUB</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root { --neon: #00f2ff; --break: #00ff88; --bg: #010409; --glass: rgba(255, 255, 255, 0.05); }
-        * { box-sizing: border-box; scroll-behavior: smooth; }
+        :root { --neon: #00f2ff; --bg: #010409; --glass: rgba(255, 255, 255, 0.05); }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+        /* --- LOGIN & NODE SELECTION --- */
+        #login-screen { text-align: center; z-index: 5000; width: 100%; max-width: 420px; }
+        .login-box { background: var(--glass); padding: 50px; border-radius: 30px; border: 1px solid rgba(0, 242, 255, 0.2); backdrop-filter: blur(25px); }
+        select { width: 100%; background: #000; color: white; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-weight: 600; cursor: pointer; outline: none; text-align: center; }
+
+        /* --- STATION UI --- */
+        #station-ui { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        body.unlocked #station-ui { display: flex; }
+        body.unlocked #login-screen { display: none; }
+
+        /* --- HUB SIDEBAR --- */
+        #sidebar { position: fixed; left: 30px; top: 50%; transform: translateY(-50%); width: 250px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; }
+        .hub-hdr { color: var(--neon); font-size: 0.6rem; letter-spacing: 4px; font-weight: 900; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .leader-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 12px; opacity: 0.6; }
+        .leader-row.top { color: var(--neon); opacity: 1; font-weight: 800; }
         
-        body { 
-            margin: 0; background: var(--bg); color: white; font-family: 'Inter', -apple-system, sans-serif; 
-            overflow-x: hidden; transition: 1.5s;
+        #timer-display { font-size: 12vw; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px rgba(0, 242, 255, 0.3); }
+        .controls { position: fixed; bottom: 50px; display: flex; gap: 20px; }
+        button { background: var(--neon); color: black; border: none; padding: 15px 35px; border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 style="letter-spacing: 12px; color: var(--neon); margin-bottom: 5px;">IST ELITE</h1>
+            <p style="font-size: 0.6rem; opacity: 0.4; margin-bottom: 40px;">GLOBAL NEURAL NETWORK V4.0</p>
+            
+            <select id="node-select">
+                <option value="KOCHI, IN">INDIA - KOCHI NODE</option>
+                <option value="LONDON, UK">EUROPE - LONDON NODE</option>
+                <option value="NEW YORK, US">USA - NEW YORK NODE</option>
+                <option value="DUBAI, UAE">UAE - DUBAI NODE</option>
+            </select>
+
+            <div id="g_id_onload"
+                 data-client_id="402132270232-qa1iikn30jd71a19rp0c14o9ee1njsps.apps.googleusercontent.com"
+                 data-callback="handleAuth">
+            </div>
+            <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
+            
+            <button onclick="unlockStation('Guest')" style="margin-top: 20px; width:100%; background:transparent; color:#555; border: 1px solid #222;">Offline Bypass</button>
+        </div>
+    </div>
+
+    <div id="station-ui">
+        <div id="sidebar">
+            <div class="hub-hdr">LEADERBOARD</div>
+            <div class="leader-row top"><span>01. RITHIKA</span><span>142H</span></div>
+            <div class="leader-row"><span>02. YOU</span><span>0H</span></div>
+            <div class="hub-hdr" style="margin-top:40px;">ACTIVE NODE</div>
+            <div id="active-node" style="color:var(--neon); font-weight:bold; font-size:0.8rem;">---</div>
+        </div>
+        <div id="timer-display">25:00</div>
+        <div class="controls"><button id="main-btn" onclick="toggleTimer()">Start Session</button></div>
+    </div>
+
+    <script>
+        let secLeft = 25 * 60, timerLoop, isRunning = false;
+        function handleAuth(resp) { unlockStation(); }
+        function unlockStation() {
+            document.getElementById('active-node').textContent = document.getElementById('node-select').value;
+            document.body.classList.add('unlocked');
         }
-
-        /* --- BACKGROUND AURA --- */
-        body::before {
-            content: ""; position: fixed; inset: 0;
-            background: radial-gradient(circle at center, var(--neon) 0%, transparent 70%);
-            z-index: 0; opacity: 0.1; animation: breathe 12s infinite ease-in-out; pointer-events: none;
+        function toggleTimer() {
+            if (isRunning) { clearInterval(timerLoop); } 
+            else {
+                timerLoop = setInterval(() => {
+                    if (secLeft > 0) {
+                        secLeft--;
+                        let m = Math.floor(secLeft/60), s = secLeft%60;
+                        document.getElementById('timer-display').textContent = `${m}:${s < 10 ? '0'+s : s}`;
+                    }
+                }, 1000);
+            }
+            isRunning = !isRunning;
+            document.getElementById('main-btn').textContent = isRunning ? "Pause" : "Resume";
         }
-        @keyframes breathe { 0%, 100% { opacity: 0.05; } 50% { opacity: 0.15; } }
-
-        /* --- AUTH SCREEN --- */
-        #auth-overlay {
-            position: fixed; inset: 0; background: var(--bg); z-index: 5000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-
-        /* --- MAIN LAYOUT --- */
-        #main-content { opacity: 0; pointer-events: none; transition: 1s; }
-        body.unlocked #main-content { opacity: 1; pointer-events: auto; }
-        body.unlocked #auth-overlay { display: none; }
-
-        section { min-height: 100vh; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; padding: 40px 20px; }
-
-        /* --- THE STATION CORE --- */
+    </script>
+</body>
+</html>        /* --- THE STATION CORE --- */
         #station { justify-content: center; }
         #precision-clock { position: absolute; top: 30px; font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; }
         #ghost-clock { 
